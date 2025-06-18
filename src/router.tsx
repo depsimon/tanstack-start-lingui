@@ -1,3 +1,5 @@
+import type { I18n } from "@lingui/core";
+import { I18nProvider } from "@lingui/react";
 import {
 	MutationCache,
 	notifyManager,
@@ -6,14 +8,16 @@ import {
 } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { routerWithQueryClient } from "@tanstack/react-router-with-query";
+import type { PropsWithChildren } from "react";
 import { toast } from "sonner";
 import { routeTree } from "~/routeTree.gen";
 
 export interface AppContext {
+	i18n: I18n;
 	queryClient: QueryClient;
 }
 
-export function createRouter() {
+export function createRouter({ i18n }: { i18n: I18n }) {
 	if (typeof document !== "undefined") {
 		notifyManager.setScheduler(window.requestAnimationFrame);
 	}
@@ -54,8 +58,11 @@ export function createRouter() {
 	const router = routerWithQueryClient(
 		createTanStackRouter({
 			routeTree,
-			context: { queryClient },
+			context: { i18n, queryClient },
 			scrollRestoration: true,
+			Wrap: ({ children }: PropsWithChildren) => {
+				return <I18nProvider i18n={i18n}>{children}</I18nProvider>;
+			},
 		}),
 		queryClient,
 	);

@@ -4,52 +4,118 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as IndexRouteImport } from "./routes/index";
+import { createServerRootRoute } from "@tanstack/react-start/server";
 
-const IndexRoute = IndexRouteImport.update({
+import { Route as rootRouteImport } from "./routes/__root";
+import { ServerRoute as ApiContentServerRouteImport } from "./routes/api.content";
+import { Route as ContentRouteImport } from "./routes/content";
+import { Route as RouteRouteImport } from "./routes/route";
+
+const rootServerRouteImport = createServerRootRoute();
+
+const ContentRoute = ContentRouteImport.update({
+	id: "/content",
+	path: "/content",
+	getParentRoute: () => rootRouteImport,
+} as any);
+const RouteRoute = RouteRouteImport.update({
 	id: "/",
 	path: "/",
 	getParentRoute: () => rootRouteImport,
 } as any);
+const ApiContentServerRoute = ApiContentServerRouteImport.update({
+	id: "/api/content",
+	path: "/api/content",
+	getParentRoute: () => rootServerRouteImport,
+} as any);
 
 export interface FileRoutesByFullPath {
-	"/": typeof IndexRoute;
+	"/": typeof RouteRoute;
+	"/content": typeof ContentRoute;
 }
 export interface FileRoutesByTo {
-	"/": typeof IndexRoute;
+	"/": typeof RouteRoute;
+	"/content": typeof ContentRoute;
 }
 export interface FileRoutesById {
 	__root__: typeof rootRouteImport;
-	"/": typeof IndexRoute;
+	"/": typeof RouteRoute;
+	"/content": typeof ContentRoute;
 }
 export interface FileRouteTypes {
 	fileRoutesByFullPath: FileRoutesByFullPath;
-	fullPaths: "/";
+	fullPaths: "/" | "/content";
 	fileRoutesByTo: FileRoutesByTo;
-	to: "/";
-	id: "__root__" | "/";
+	to: "/" | "/content";
+	id: "__root__" | "/" | "/content";
 	fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-	IndexRoute: typeof IndexRoute;
+	RouteRoute: typeof RouteRoute;
+	ContentRoute: typeof ContentRoute;
+}
+export interface FileServerRoutesByFullPath {
+	"/api/content": typeof ApiContentServerRoute;
+}
+export interface FileServerRoutesByTo {
+	"/api/content": typeof ApiContentServerRoute;
+}
+export interface FileServerRoutesById {
+	__root__: typeof rootServerRouteImport;
+	"/api/content": typeof ApiContentServerRoute;
+}
+export interface FileServerRouteTypes {
+	fileServerRoutesByFullPath: FileServerRoutesByFullPath;
+	fullPaths: "/api/content";
+	fileServerRoutesByTo: FileServerRoutesByTo;
+	to: "/api/content";
+	id: "__root__" | "/api/content";
+	fileServerRoutesById: FileServerRoutesById;
+}
+export interface RootServerRouteChildren {
+	ApiContentServerRoute: typeof ApiContentServerRoute;
 }
 
 declare module "@tanstack/react-router" {
 	interface FileRoutesByPath {
+		"/content": {
+			id: "/content";
+			path: "/content";
+			fullPath: "/content";
+			preLoaderRoute: typeof ContentRouteImport;
+			parentRoute: typeof rootRouteImport;
+		};
 		"/": {
 			id: "/";
 			path: "/";
 			fullPath: "/";
-			preLoaderRoute: typeof IndexRouteImport;
+			preLoaderRoute: typeof RouteRouteImport;
 			parentRoute: typeof rootRouteImport;
+		};
+	}
+}
+declare module "@tanstack/react-start/server" {
+	interface ServerFileRoutesByPath {
+		"/api/content": {
+			id: "/api/content";
+			path: "/api/content";
+			fullPath: "/api/content";
+			preLoaderRoute: typeof ApiContentServerRouteImport;
+			parentRoute: typeof rootServerRouteImport;
 		};
 	}
 }
 
 const rootRouteChildren: RootRouteChildren = {
-	IndexRoute: IndexRoute,
+	RouteRoute: RouteRoute,
+	ContentRoute: ContentRoute,
 };
 export const routeTree = rootRouteImport
 	._addFileChildren(rootRouteChildren)
 	._addFileTypes<FileRouteTypes>();
+const rootServerRouteChildren: RootServerRouteChildren = {
+	ApiContentServerRoute: ApiContentServerRoute,
+};
+export const serverRouteTree = rootServerRouteImport
+	._addFileChildren(rootServerRouteChildren)
+	._addFileTypes<FileServerRouteTypes>();
